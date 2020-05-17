@@ -318,7 +318,7 @@ recompiled, you should get the following behavior:
 >>> eval env0 (EBin Minus (EBin Plus (EVar "x") (EVar "y")) (EBin Plus (EVar "z") (EVar "z1")))
 0
 
->>> eval env0 "p"
+>>> eval env0 (EVar "p")
 *** Exception: Error {errMsg = "unbound variable: p"}
 ```
 

@@ -100,7 +100,7 @@ exitError (Error msg) = return (VErr msg)
 -- >>> eval env0 (EBin Minus (EBin Plus "x" "y") (EBin Plus "z" "z1"))
 -- 0
 --
--- >>> eval env0 "p"
+-- >>> eval env0 (EVar "p")
 -- *** Exception: Error {errMsg = "unbound variable: p"}
 --
 -- part (b)
@@ -112,7 +112,7 @@ exitError (Error msg) = return (VErr msg)
 -- False
 --
 -- >>> eval []  (EBin Eq (EInt 2) (EBool True))
--- False
+-- *** Exception: Error {errMsg = "type error: binop"}
 --
 -- >>> eval []  (EBin Lt (EInt 2) (EBool True))
 -- *** Exception: Error {errMsg = "type error: binop"}

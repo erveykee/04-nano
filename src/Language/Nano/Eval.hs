@@ -165,12 +165,58 @@ exitError (Error msg) = return (VErr msg)
 --------------------------------------------------------------------------------
 eval :: Env -> Expr -> Value
 --------------------------------------------------------------------------------
-eval = error "TBD:eval"
+eval env (EInt x) = VInt x
+eval env (EBool x) = VBool x
+eval env (ENil) = VNil
+eval env (EVar x) = lookupId x env
+
+eval env (EBin Cons exp1 exp2) = VCons (eval env exp1) (eval env exp2)
+eval env (EBin op exp1 exp2) = evalOp op (eval env exp1) (eval env exp2)
+
+eval env (EIf exp1 exp2 exp3) = if (boolConvert (eval env exp1)) then (eval env exp2) else (eval env exp3) 
+                        where 
+                        boolConvert (VBool b) = b 
+
+eval env (ELet x exp1 exp2) = eval ((x, (eval env exp1)):env) exp2
+
+{--eval env (ELam x exp1) = VClos env x exp1
+eval env (EApp (ELam x exp1) exp2) = 
+
+eval env (EApp exp1 exp2) = eval env (EApp (eval env exp1) exp2)
+--}
+eval env (EApp exp1 exp2) = eval (getEnvironment exp1Eval) (ELet (getId exp1Eval) exp2 (getExp exp1Eval))
+                          where   
+                          exp1Eval = (eval env exp1)
+                          getEnvironment (VClos env1 x exp1) = env1
+                          getId (VClos env1 x exp1) = x
+                          getExp (VClos env1 x exp1) = exp1
+{--
+eval env (EApp exp1 exp2) = eval env1 (ELet x (eval env exp2) exp3)
+                          where   
+                          VClos env1 x exp3 = (eval env exp1)
+--}
+
+
+--eval env exp1 = error("some sort of errror: ")
+
 
 --------------------------------------------------------------------------------
 evalOp :: Binop -> Value -> Value -> Value
 --------------------------------------------------------------------------------
-evalOp = error "TBD:evalOp"
+evalOp Plus (VInt a) (VInt b) = VInt (a + b)
+evalOp Minus (VInt a) (VInt b) = VInt (a - b)
+evalOp Mul (VInt a) (VInt b) = VInt (a * b)
+evalOp Div (VInt a) (VInt b) = VInt (a `div` b)
+
+evalOp Eq (VInt a) (VInt b) = VBool (a == b)
+evalOp Eq (VBool a) (VBool b) = VBool (a == b)
+evalOp Ne (VInt a) (VInt b) = VBool (a /= b)
+evalOp Ne (VBool a) (VBool b) = VBool (a /= b)
+evalOp Lt (VInt a) (VInt b) = VBool (a < b)
+evalOp Le (VInt a) (VInt b) = VBool (a <= b)
+evalOp And (VBool a) (VBool b) = VBool (a && b)
+evalOp Or (VBool a) (VBool b) = VBool (a || b)
+evalOp op val1 val2 = error("some type errror: ") -- need to fix this catch all case
 
 --------------------------------------------------------------------------------
 -- | `lookupId x env` returns the most recent
@@ -188,8 +234,11 @@ evalOp = error "TBD:evalOp"
 -- *** Exception: Error {errMsg = "unbound variable: mickey"}
 --------------------------------------------------------------------------------
 lookupId :: Id -> Env -> Value
---------------------------------------------------------------------------------
-lookupId = error "TBD:lookupId"
+lookupId x [] = error("unbound variable: " ++ x)
+lookupId x (e:env) | (x == el1) = el2 
+                   | otherwise = lookupId x (env)
+                     where (el1, el2) = e
+
 
 prelude :: Env
 prelude =
